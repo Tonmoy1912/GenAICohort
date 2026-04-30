@@ -93,22 +93,22 @@ async function runAgent() {
                 messages.push({
                     role: "developer",
                     content: `The tool ${toolName} doesn't exist.`
-                })
+                });
             }
+            else {
+                console.log(`\t🛠️ - Calling tool ${toolName}(${arg}) `);
 
-            console.log(`\t🛠️ - Calling tool ${toolName}(${arg}) `);
+                let commandOutput = await toolCollection[toolName](arg);
 
-            let commandOutput = await toolCollection[toolName](arg);
-
-            messages.push({
-                role: "developer",
-                content: JSON.stringify({
-                    stepType: "OBSERVE",
-                    exitCode: commandOutput.exitCode,
-                    stdout: commandOutput.stdout
-                })
-            });
-
+                messages.push({
+                    role: "developer",
+                    content: JSON.stringify({
+                        stepType: "OBSERVE",
+                        exitCode: commandOutput.exitCode,
+                        stdout: commandOutput.stdout
+                    })
+                });
+            }
         }
         else {
             console.log(`📊 - ${parsedContent.content}`);

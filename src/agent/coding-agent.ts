@@ -3,22 +3,35 @@ import OpenAI from "openai";
 import { exec } from 'child_process';
 import type { ResponseInputItem } from 'openai/resources/responses/responses.js';
 
-type toolReturnType = { exitCode?: number | undefined, stdout: string };
-
 dotenv.config();
 
 const openai = new OpenAI();
 
-// tool definition
-async function executeCommand(command: string): Promise<toolReturnType> {
+// --- Types ---
+type StepType = 'START' | 'THINK' | 'TOOL_CALL' | 'OBSERVE' | 'OUTPUT';
+
+interface AgentResponse {
+    stepType: StepType;
+    content?: string;
+    tool?: string;
+    arg?: string;
+}
+
+interface ToolResult {
+    exitCode: number;
+    stdout: string;
+}
+
+// --- Tool Definition ---
+async function executeCommand(command: string): Promise<ToolResult> {
     return new Promise((resolve, reject) => {
         exec(command, (error, stdout, stderr) => {
-            resolve({ exitCode: (!error) ? 0 : error.code, stdout: stdout || stderr });
+            resolve({ exitCode: error ? error.code ?? 1 : 0, stdout: stdout || stderr });
         });
     })
 }
 
-let toolCollection: Record<string, (_: string) => Promise<toolReturnType>> = {
+let toolCollection: Record<string, (arg: string) => Promise<ToolResult>> = {
     executeCommand: executeCommand
 }
 
@@ -78,7 +91,7 @@ async function runAgent() {
         });
 
         let rawContent = response.output_text;
-        let parsedContent = JSON.parse(rawContent);
+        let parsedContent: AgentResponse = JSON.parse(rawContent);
 
         messages.push({ role: "assistant", content: rawContent }); // maintain context.
 
@@ -89,8 +102,8 @@ async function runAgent() {
             console.log(`\t💭 - ${parsedContent.content}`);
         }
         else if (parsedContent.stepType == "TOOL_CALL") {
-            let toolName = parsedContent.tool;
-            let arg = parsedContent.arg;
+            let toolName = parsedContent.tool!;
+            let arg = parsedContent.arg!;
 
             if (!toolCollection[toolName]) {
                 messages.push({
