@@ -144,4 +144,6 @@ vite.config.ts.timestamp-*
 
 #AI Generated Output
 AIGeneratedOutput/
+
 .DS_Store
+pdfs/
