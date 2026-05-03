@@ -18,10 +18,12 @@
     "@langchain/core": "^1.1.42",
     "@langchain/openai": "^1.4.5",
     "@langchain/qdrant": "^1.0.2",
+    "@openai/agents": "^0.8.5",
     "dotenv": "^17.4.2",
     "openai": "^6.34.0",
     "pdf-parse": "^1.1.4",
-    "tiktoken": "^1.0.22"
+    "tiktoken": "^1.0.22",
+    "zod": "^4.4.2"
   },
   "devDependencies": {
     "@types/node": "^25.6.0",
